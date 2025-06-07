@@ -1,4 +1,4 @@
-const apiBaseUrl = "https://crudcrud.com/api/81ee346ab2b2408d8d45444a3067b743/unicórnios";
+const apiBaseUrl = "https://crudcrud.com/api/81ee346ab2b2408d8d45444a3067b743/clientes";
 
 const form = document.getElementById("cliente-form");
 const nomeInput = Document.getElementById("nome");
