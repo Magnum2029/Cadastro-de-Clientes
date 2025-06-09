@@ -1,63 +1,70 @@
-const apiBaseUrl = "https://crudcrud.com/api/81ee346ab2b2408d8d45444a3067b743/clientes";
+const API_URL = 'https://crudcrud.com/api/cd1671958fc2480da91df2bcae935383/clientes'; // Substitua pelo seu endpoint!
 
-const form = document.getElementById("cliente-form");
-const nomeInput = Document.getElementById("nome");
-const emailInput = document.getElementById("email");
-const listaClientes = document.getElementById("clientes-lista");
+const form = document.getElementById('form-cliente');
+const lista = document.getElementById('lista-clientes');
 
-// Carregar clientes ao iniciar
-document.addEventListener("DOMContentLoaded", () => {
-    carregarClientes();
-});
+// Submete o formulário para cadastrar cliente
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-form.addEventListener("submit", function (e) {
-    e.preventDefault();
+  const nome = document.getElementById('nome').value.trim();
+  const email = document.getElementById('email').value.trim();
 
-    const cliente = {
-        nome: nomeInput.value.trim(),
-        email: emailInput.value.trim()
-    };
+  if (!nome || !email) return;
 
-    if (!cliente.nome || !cliente.email) return;
+  const cliente = { nome, email };
 
-    fetch(apiBaseUrl, {
-        method: "POST",
-        headers: {"Content-Type": "application/jon" },
-        body: JSON.stringify(cliente)
-    })
-    .then(res => res.json() )
-    .then(data => {
-        adicionarClienteNaTela(data);
-        form.reset();
-    })
-    .catch(err => console.error("Erro ao cadastrar:", err));
-});
-
-function carregarClientes() {
-    fetch(apiBaseUrl)
-    .then(res => res.json())
-    .then(clientes => {
-        listaClientes.innerHTML = "";
-        clientes.forEach(adicionarClienteNaTela);
-    })
-    .catch(err => console.error("Erro ao carregar:", err));
-}
-
-function adicionarClienteNaTela(cliente) {
-    const li = document.createElement("li");
-    li.innerHTML = `
-    <span><strong>${cliente.nome}</strong> - ${cliente.email}</span>
-    <button class="delete-btn">Excluir</button>
-    `;
-
-    const btnExcluir = li.querySelector(".delete-btn");
-    btnExcluir.addEventListener("click", () => {
-     fetch(`${apiBaseUrl}/${cliente._id}`, {
-        method:"DELETE"
-     })
-     .then(() => li.remove())
-     .catch(err => console.error("erro ao excluir cliente:", err));
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cliente)
     });
 
-    listaClientes.appendChild(li);
+    form.reset();
+    carregarClientes();
+  } catch (erro) {
+    console.error('Erro ao cadastrar cliente:', erro);
+  }
+});
+
+// Carrega e exibe todos os clientes
+async function carregarClientes() {
+  lista.innerHTML = '';
+
+  try {
+    const resposta = await fetch(API_URL);
+    const clientes = await resposta.json();
+
+    if (clientes.length === 0) {
+      lista.innerHTML = '<li>Nenhum cliente cadastrado.</li>';
+      return;
+    }
+
+    clientes.forEach(cliente => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <strong>${cliente.nome}</strong> (${cliente.email})
+        <button onclick="excluirCliente('${cliente._id}')">Excluir</button>
+      `;
+      lista.appendChild(li);
+    });
+  } catch (erro) {
+    console.error('Erro ao carregar clientes:', erro);
+  }
 }
+
+// Exclui cliente por ID
+async function excluirCliente(id) {
+  try {
+    await fetch(`${API_URL}/${id}`, {
+      method: 'DELETE'
+    });
+    carregarClientes();
+  } catch (erro) {
+    console.error('Erro ao excluir cliente:', erro);
+  }
+}
+
+// Carrega os clientes ao iniciar
+carregarClientes();
